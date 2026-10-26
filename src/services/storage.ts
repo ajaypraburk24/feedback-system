@@ -559,7 +559,8 @@ export class StorageService {
 
   // Students
   static getStudents(): Student[] {
-    return this.load<Student[]>(STORAGE_KEYS.STUDENTS, INITIAL_STUDENTS);
+    const list = this.load<Student[]>(STORAGE_KEYS.STUDENTS, INITIAL_STUDENTS);
+    return Array.isArray(list) && list.length > 0 ? list : INITIAL_STUDENTS;
   }
 
   static addStudent(student: Omit<Student, 'student_id'>): Student {
@@ -575,7 +576,8 @@ export class StorageService {
 
   // Faculty
   static getFaculty(): Faculty[] {
-    return this.load<Faculty[]>(STORAGE_KEYS.FACULTY, INITIAL_FACULTY);
+    const list = this.load<Faculty[]>(STORAGE_KEYS.FACULTY, INITIAL_FACULTY);
+    return Array.isArray(list) && list.length > 0 ? list : INITIAL_FACULTY;
   }
 
   static addFaculty(faculty: Omit<Faculty, 'faculty_id'>): Faculty {

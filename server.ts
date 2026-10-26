@@ -3,6 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -278,13 +279,19 @@ Return ONLY valid JSON.`;
     }
   });
 
-  // Vite middleware mounting in development
-  if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('dist'));
+  // Static serving for production deployment vs Vite middleware for local development
+  const distPath = path.resolve(process.cwd(), 'dist');
+  const distIndex = path.join(distPath, 'index.html');
+  const isProduction = process.env.NODE_ENV === 'production' || (!process.env.DISABLE_PROD && fs.existsSync(distIndex));
+
+  if (isProduction && fs.existsSync(distIndex)) {
+    console.log(`[EduShield Server] Serving static build from ${distPath}`);
+    app.use(express.static(distPath));
     app.get('*', (_req, res) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+      res.sendFile(distIndex);
     });
   } else {
+    console.log(`[EduShield Server] Mounting Vite development middleware`);
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -293,7 +300,7 @@ Return ONLY valid JSON.`;
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[EduShield Server] Running on http://0.0.0.0:${PORT}`);
+    console.log(`[EduShield Server] Running on http://0.0.0.0:${PORT} (PID: ${process.pid})`);
   });
 }
 

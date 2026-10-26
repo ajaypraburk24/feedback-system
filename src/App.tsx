@@ -20,19 +20,44 @@ export default function App() {
   const [summaries, setSummaries] = useState<FacultyRatingsSummary[]>(StorageService.getAllFacultySummaries());
   const [auditLogs, setAuditLogs] = useState<PrivacyAuditLog[]>(StorageService.getAuditLogs());
 
-  // Selected student & faculty
-  const [selectedStudent, setSelectedStudent] = useState<Student>(students[0]);
-  const [selectedFaculty, setSelectedFaculty] = useState<Faculty>(facultyList[0]);
+  // Selected student & faculty states with safe fallbacks
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(students[0] || null);
+  const [selectedFaculty, setSelectedFaculty] = useState<Faculty | null>(facultyList[0] || null);
+
+  const currentStudent: Student = selectedStudent || students[0] || {
+    student_id: 101,
+    student_name: 'Ajay Prabu R K',
+    department: 'CSE (AI & ML)',
+    year: 2,
+    email: '814725148004@college.edu',
+    reg_no: '814725148004',
+  };
+
+  const currentFaculty: Faculty = selectedFaculty || facultyList[0] || {
+    faculty_id: 1,
+    faculty_name: 'Rajesh',
+    department: 'Computer Science & Engineering',
+    subject: 'Operating Systems (OS)',
+    email: 'rajesh@college.edu',
+  };
 
   // Terminal Modal
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   const refreshAllData = () => {
-    setStudents(StorageService.getStudents());
-    setFacultyList(StorageService.getFaculty());
+    const s = StorageService.getStudents();
+    const f = StorageService.getFaculty();
+    setStudents(s);
+    setFacultyList(f);
     setConfig(StorageService.getConfig());
     setSummaries(StorageService.getAllFacultySummaries());
     setAuditLogs(StorageService.getAuditLogs());
+    if (s.length > 0 && (!selectedStudent || !s.some(st => st.student_id === selectedStudent.student_id))) {
+      setSelectedStudent(s[0]);
+    }
+    if (f.length > 0 && (!selectedFaculty || !f.some(fc => fc.faculty_id === selectedFaculty.faculty_id))) {
+      setSelectedFaculty(f[0]);
+    }
   };
 
   const handleUpdateConfig = (cfg: Partial<ComplianceConfig>) => {
@@ -44,7 +69,9 @@ export default function App() {
 
   const handleViewFacultyReport = (facultyId: number) => {
     const target = facultyList.find((f) => f.faculty_id === facultyId) || facultyList[0];
-    setSelectedFaculty(target);
+    if (target) {
+      setSelectedFaculty(target);
+    }
     setCurrentRole('faculty');
     setActiveTab('faculty');
   };
@@ -57,9 +84,9 @@ export default function App() {
         setActiveTab={setActiveTab}
         currentRole={currentRole}
         setCurrentRole={setCurrentRole}
-        selectedStudent={selectedStudent}
+        selectedStudent={currentStudent}
         setSelectedStudent={setSelectedStudent}
-        selectedFaculty={selectedFaculty}
+        selectedFaculty={currentFaculty}
         setSelectedFaculty={setSelectedFaculty}
         students={students}
         facultyList={facultyList}
@@ -70,7 +97,7 @@ export default function App() {
       <main className="flex-1 pb-16">
         {activeTab === 'student' && (
           <StudentModule
-            currentStudent={selectedStudent}
+            currentStudent={currentStudent}
             facultyList={facultyList}
             config={config}
             onFeedbackSubmitted={refreshAllData}
@@ -80,7 +107,7 @@ export default function App() {
 
         {activeTab === 'faculty' && (
           <FacultyModule
-            currentFaculty={selectedFaculty}
+            currentFaculty={currentFaculty}
             allFaculty={facultyList}
             onSelectFaculty={setSelectedFaculty}
             config={config}
