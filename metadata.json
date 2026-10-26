@@ -1,0 +1,6 @@
+{
+  "name": "EduShield - Teachers Feedback & Real-Time Sentiment System",
+  "description": "Student feedback system prototype featuring real-time AI sentiment analysis, anonymous faculty performance reports, FERPA/GDPR compliance, and privacy-preserving data security standards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
